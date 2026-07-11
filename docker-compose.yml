@@ -1,0 +1,40 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ../kanban-backend
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URI: mongodb://mongo:27017/kanban
+      PORT: 5000
+      CORS_ORIGIN: http://localhost:8080
+      JWT_SECRET: aehfiusehfwisuhfe
+    depends_on:
+      - mongo
+
+  seed:
+    build:
+      context: ../kanban-backend
+    command: node dist/seed.js
+    environment:
+      MONGO_URI: mongodb://mongo:27017/kanban
+    depends_on:
+      - backend
+
+  frontend:
+    build:
+      context: ../kanban-frontend
+      args:
+        VITE_API_URL: http://localhost:5000/api
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:
