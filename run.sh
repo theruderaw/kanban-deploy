@@ -2,28 +2,29 @@
 
 set -e
 
-BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(dirname "$DEPLOY_DIR")"
 
-BACKEND_DIR="$BASE_DIR/kanban-backend"
-FRONTEND_DIR="$BASE_DIR/kanban-frontend"
+BACKEND_DIR="$ROOT_DIR/kanban-backend"
+FRONTEND_DIR="$ROOT_DIR/kanban-frontend"
 
-BACKEND_REPO="https://github.com/theruderaw/kanban-backend.git"
-FRONTEND_REPO="https://github.com/theruderaw/kanban-frontend.git"
+echo "Deploy directory: $DEPLOY_DIR"
+echo "Root directory: $ROOT_DIR"
 
-echo "=== Updating repositories ==="
 
 if [ ! -d "$BACKEND_DIR" ]; then
     echo "Cloning backend..."
-    git clone "$BACKEND_REPO" "$BACKEND_DIR"
+    git clone https://github.com/theruderaw/kanban-backend.git "$BACKEND_DIR"
 else
     echo "Updating backend..."
     cd "$BACKEND_DIR"
     git pull --ff-only
 fi
 
+
 if [ ! -d "$FRONTEND_DIR" ]; then
     echo "Cloning frontend..."
-    git clone "$FRONTEND_REPO" "$FRONTEND_DIR"
+    git clone https://github.com/theruderaw/kanban-frontend.git "$FRONTEND_DIR"
 else
     echo "Updating frontend..."
     cd "$FRONTEND_DIR"
@@ -31,18 +32,15 @@ else
 fi
 
 
-echo "=== Stopping old containers ==="
+cd "$DEPLOY_DIR"
 
-cd "$BASE_DIR"
-
+echo "Stopping old containers..."
 docker compose down
 
 
-echo "=== Building and starting containers ==="
-
+echo "Building and starting..."
 docker compose up -d --build
 
 
-echo "=== Deployment complete ==="
-
+echo "Done."
 docker compose ps
